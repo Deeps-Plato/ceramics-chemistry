@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ceramics Chemistry — Interactive Learning Tool</title>
+  <style>
+    /* ── Root tokens ───────────────────────────────────── */
+    :root {
+      --bg:        #18130e;
+      --surf:      #221c15;
+      --surf2:     #2e261d;
+      --border:    #4a3e2e;
+      --text:      #e8dece;
+      --muted:     #8a7e6a;
+      --accent:    #d46a28;
+      --accent2:   #ebb060;
+      --clay-red:  #b84820;
+      --clay-tan:  #c8906a;
+      --clay-grey: #788a8c;
+      --fire:      #ff6820;
+      --fire2:     #ffc040;
+      --glaze:     #4888c8;
+      --green:     #4a9060;
+      --radius:    10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); color: var(--accent2); margin-bottom: 1.25rem; }
+    h3 { font-size: 1.25rem; color: var(--accent); margin-bottom: 0.6rem; }
+    h4 { font-size: 1rem; margin-bottom: 0.4rem; }
+    p  { margin-bottom: 0.9rem; }
+
+    code {
+      font-family: 'Courier New', monospace;
+      background: var(--surf2);
+      padding: .1em .35em;
+      border-radius: 4px;
+      font-size: .88em;
+      color: var(--accent2);
+    }
+
+    a { color: var(--accent2); }
+
+    /* ── Nav ───────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(24,19,14,.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; gap: 1.25rem;
+      height: 52px; overflow-x: auto;
+    }
+    .nav-logo { color: var(--accent2); font-weight: bold; font-size: 1rem; white-space: nowrap; margin-right: auto; font-family: sans-serif; }
+    nav a {
+      color: var(--muted); text-decoration: none;
+      font-size: .8rem; font-family: 'Helvetica Neue', sans-serif;
+      white-space: nowrap; transition: color .2s;
+    }
+    nav a:hover { color: var(--accent2); }
+
+    /* ── Sections ──────────────────────────────────────── */
+    section { padding: 5rem 1.5rem; }
+    section:nth-child(even) { background: var(--surf); }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-intro { max-width: 760px; margin-bottom: 2.5rem; color: var(--muted); font-size: 1.05rem; }
+
+    /* ── Hero ──────────────────────────────────────────── */
+    .hero {
+      min-height: 88vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 5rem 2rem;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 50%, rgba(180,72,32,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 80% at 30% 80%, rgba(72,136,200,.1) 0%, transparent 60%),
+        linear-gradient(160deg, #18130e 0%, #1e170f 100%);
+    }
+    .hero-content { position: relative; max-width: 700px; }
+    .hero-subtitle {
+      display: inline-block;
+      background: var(--surf2); border: 1px solid var(--border);
+      color: var(--accent); font-family: sans-serif; font-size: .8rem;
+      padding: .25rem .8rem; border-radius: 20px; margin-bottom: 1.25rem;
+      letter-spacing: .1em; text-transform: uppercase;
+    }
+    .hero h1 { margin-bottom: 1.25rem; }
+    .hero h1 em { color: var(--accent2); font-style: normal; }
+    .hero p { font-size: 1.15rem; color: var(--muted); max-width: 580px; margin-bottom: 2rem; }
+    .hero-chips { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .chip {
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: 20px; padding: .3rem .9rem;
+      font-family: sans-serif; font-size: .8rem; color: var(--muted);
+    }
+
+    /* ── Cards grid ────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      transition: border-color .2s, transform .2s;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .card-icon { font-size: 2rem; margin-bottom: .75rem; }
+    .card-formula {
+      font-family: 'Courier New', monospace;
+      font-size: .8rem; color: var(--accent2);
+      background: var(--surf); padding: .4rem .8rem;
+      border-radius: 6px; margin-top: .75rem; display: inline-block;
+    }
+    .card-badge {
+      display: inline-block; font-size: .7rem;
+      font-family: sans-serif; padding: .2rem .6rem;
+      border-radius: 12px; margin-bottom: .5rem;
+    }
+
+    /* ── Molecular structure ───────────────────────────── */
+    .structure-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem; align-items: start;
+    }
+    @media (max-width: 700px) { .structure-wrap { grid-template-columns: 1fr; } }
+    .structure-legend { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+    .legend-item { display: flex; align-items: center; gap: .4rem; font-size: .85rem; font-family: sans-serif; }
+    .legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Temperature chart ─────────────────────────────── */
+    #chart-wrap {
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      overflow-x: auto;
+    }
+    #temp-svg { display: block; width: 100%; max-width: 900px; margin: 0 auto; }
+    .zone-band { cursor: pointer; opacity: .45; transition: opacity .2s; }
+    .zone-band:hover { opacity: .75; }
+    .zone-band.active { opacity: .8; }
+
+    #zone-detail {
+      margin-top: 1.5rem;
+      background: var(--surf); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      display: none;
+    }
+    #zone-detail.visible { display: block; }
+    .zone-eq {
+      font-family: 'Courier New', monospace;
+      background: var(--surf2); border-left: 3px solid var(--accent);
+      padding: .6rem 1rem; border-radius: 0 6px 6px 0;
+      margin: .75rem 0; font-size: .95rem; color: var(--accent2);
+    }
+    .temp-range-badge {
+      display: inline-block;
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: 20px; padding: .2rem .8rem;
+      font-family: sans-serif; font-size: .8rem; color: var(--accent2);
+      margin-bottom: .75rem;
+    }
+    .chart-hint {
+      text-align: center; font-family: sans-serif; font-size: .82rem;
+      color: var(--muted); margin-bottom: 1rem;
+    }
+
+    /* ── Glaze ─────────────────────────────────────────── */
+    .glaze-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 2.5rem; align-items: start;
+    }
+    @media (max-width: 720px) { .glaze-grid { grid-template-columns: 1fr; } }
+
+    .glaze-tri-wrap {
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      text-align: center;
+    }
+
+    .glaze-bar-group { margin-bottom: 1.5rem; }
+    .glaze-bar-label {
+      display: flex; justify-content: space-between;
+      font-family: sans-serif; font-size: .82rem; margin-bottom: .3rem;
+      color: var(--muted);
+    }
+    .glaze-bar-track {
+      height: 20px; background: var(--surf);
+      border-radius: 10px; overflow: hidden;
+    }
+    .glaze-bar-fill {
+      height: 100%; border-radius: 10px;
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+
+    .glaze-selector { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .glaze-btn {
+      background: var(--surf); border: 1px solid var(--border);
+      color: var(--text); padding: .35rem .9rem; border-radius: 20px;
+      font-family: sans-serif; font-size: .8rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .glaze-btn:hover { border-color: var(--accent); }
+    .glaze-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .glaze-preview {
+      width: 100%; height: 80px; border-radius: 8px;
+      margin-top: 1rem; transition: background .5s;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Colorants ─────────────────────────────────────── */
+    .colorant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .colorant-card {
+      border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer; transition: transform .2s;
+    }
+    .colorant-card:hover { transform: translateY(-3px); }
+    .colorant-swatch {
+      height: 90px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+    }
+    .colorant-info {
+      background: var(--surf2); padding: .8rem 1rem;
+    }
+    .colorant-name { font-weight: bold; font-size: .95rem; margin-bottom: .15rem; }
+    .colorant-oxide { font-family: 'Courier New', monospace; font-size: .75rem; color: var(--accent2); }
+    .colorant-note { font-size: .78rem; color: var(--muted); margin-top: .3rem; font-family: sans-serif; }
+
+    /* expanded colorant detail */
+    .colorant-detail {
+      grid-column: 1 / -1;
+      background: var(--surf); border: 1px solid var(--accent);
+      border-radius: var(--radius); padding: 1.5rem;
+      display: none;
+    }
+    .colorant-detail.visible { display: block; }
+
+    /* ── Atm toggle ────────────────────────────────────── */
+    .atm-toggle {
+      display: flex; gap: 0; margin-bottom: 2rem;
+      border: 1px solid var(--border); border-radius: 8px;
+      overflow: hidden; width: fit-content;
+    }
+    .atm-btn {
+      padding: .6rem 1.5rem; background: var(--surf2);
+      border: none; color: var(--muted);
+      font-family: sans-serif; font-size: .9rem;
+      cursor: pointer; transition: all .2s;
+    }
+    .atm-btn.active { background: var(--accent); color: #fff; }
+
+    .atm-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 650px) { .atm-panels { grid-template-columns: 1fr; } }
+
+    .atm-panel {
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .atm-panel.highlight { border-color: var(--accent); }
+
+    .atm-swatch-row { display: flex; gap: .5rem; margin: .75rem 0; }
+    .atm-swatch {
+      flex: 1; height: 40px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-family: sans-serif; font-weight: bold;
+      color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.5);
+    }
+
+    /* ── Home tips ─────────────────────────────────────── */
+    .tip-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .tip-card {
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem;
+    }
+    .tip-card h4 { color: var(--accent2); }
+    .tip-icon { font-size: 1.6rem; margin-bottom: .5rem; }
+
+    /* ── Reactions reference ───────────────────────────── */
+    .reaction-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .reaction-table th {
+      background: var(--surf2); color: var(--accent2);
+      padding: .6rem 1rem; text-align: left; font-family: sans-serif; font-size: .8rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .reaction-table td {
+      padding: .7rem 1rem; border-bottom: 1px solid var(--surf2);
+      vertical-align: top;
+    }
+    .reaction-table tr:hover td { background: var(--surf2); }
+    .reaction-table .eq { font-family: 'Courier New', monospace; font-size: .82rem; color: var(--accent2); }
+
+    /* ── Footer ────────────────────────────────────────── */
+    footer {
+      text-align: center; padding: 3rem 1.5rem;
+      color: var(--muted); font-family: sans-serif; font-size: .8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Scrollbar ─────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Utility ───────────────────────────────────────── */
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+      margin: 2rem 0;
+    }
+    .tag {
+      display: inline-block; font-size: .7rem; font-family: sans-serif;
+      padding: .15rem .55rem; border-radius: 10px; margin-right: .3rem;
+      margin-bottom: .3rem;
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+
+    .note-box {
+      background: rgba(212,106,40,.12); border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: .9rem 1.2rem; margin: 1rem 0; font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">🏺 Ceramics Chemistry</span>
+    <a href="#materials">Materials</a>
+    <a href="#structure">Molecules</a>
+    <a href="#firing">Firing</a>
+    <a href="#glazes">Glazes</a>
+    <a href="#colorants">Colorants</a>
+    <a href="#atmosphere">Atm</a>
+    <a href="#reactions">Reactions</a>
+    <a href="#home">Home Tips</a>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <span class="hero-subtitle">Interactive Learning Tool</span>
+    <h1>The Chemistry of<br><em>Ceramics</em></h1>
+    <p>
+      Explore what happens at a molecular level — from raw clay
+      to finished, glazed pottery — through interactive diagrams,
+      temperature charts, and reaction guides.
+    </p>
+    <div class="hero-chips">
+      <span class="chip">Clay mineralogy</span>
+      <span class="chip">Firing chemistry</span>
+      <span class="chip">Glaze science</span>
+      <span class="chip">Metal oxide colorants</span>
+      <span class="chip">Oxidation vs reduction</span>
+      <span class="chip">Home kiln tips</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── RAW MATERIALS ─────────────────────────────────── -->
+<section id="materials">
+  <div class="container">
+    <h2>Raw Materials &amp; Clay Types</h2>
+    <p class="section-intro">
+      All clay bodies share a common mineral foundation — kaolinite — but differ in
+      purity, particle size, fluxing minerals, and organic content, which determines
+      their working temperature, color, and final character.
+    </p>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-icon">🟤</div>
+        <span class="card-badge" style="background:rgba(184,72,32,.25);color:#e08060;">Earthenware</span>
+        <h3>Earthenware Clay</h3>
+        <p>The oldest ceramic body. High iron and mineral impurities keep it porous and warm-toned. Must be glazed for water-tightness.</p>
+        <ul style="font-size:.88rem;color:var(--muted);padding-left:1.2rem;margin:.5rem 0;">
+          <li>Firing range: 900 – 1150 °C</li>
+          <li>Porous after firing unless glazed</li>
+          <li>Red/orange from iron oxide (Fe₂O₃)</li>
+          <li>Low-fire glazes required</li>
+        </ul>
+        <div class="card-formula">Fe₂O₃ · Al₂Si₂O₅(OH)₄ + impurities</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⬜</div>
+        <span class="card-badge" style="background:rgba(120,138,140,.25);color:#a0b8ba;">Stoneware</span>
+        <h3>Stoneware Clay</h3>
+        <p>Fired to vitrification — becomes stone-hard and water-tight even unglazed. The workhorse of studio pottery.</p>
+        <ul style="font-size:.88rem;color:var(--muted);padding-left:1.2rem;margin:.5rem 0;">
+          <li>Firing range: 1200 – 1300 °C</li>
+          <li>Vitrifies (glass phase forms)</li>
+          <li>Grey/tan/buff tones</li>
+          <li>High-fire glazes</li>
+        </ul>
+        <div class="card-formula">Al₂Si₂O₅(OH)₄ + feldspars + quartz</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🤍</div>
+        <span class="card-badge" style="background:rgba(200,144,106,.25);color:#d4a888;">Porcelain</span>
+        <h3>Porcelain</h3>
+        <p>Pure kaolin + feldspar + silica. Translucent when thin, brilliant white, non-porous — but less plastic and harder to throw.</p>
+        <ul style="font-size:.88rem;color:var(--muted);padding-left:1.2rem;margin:.5rem 0;">
+          <li>Firing range: 1260 – 1400 °C</li>
+          <li>Translucent; highest purity</li>
+          <li>White because pure Al₂O₃·SiO₂</li>
+          <li>Very low plasticity</li>
+        </ul>
+        <div class="card-formula">Al₂Si₂O₅(OH)₄ + K₂O·Al₂O₃·6SiO₂ + SiO₂</div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🌿</div>
+        <span class="card-badge" style="background:rgba(74,144,96,.25);color:#70c090;">Terracotta</span>
+        <h3>Terracotta</h3>
+        <p>A subset of earthenware — especially iron-rich, giving the deep brick-red colour. Traditional for pots, tiles, and sculpture.</p>
+        <ul style="font-size:.88rem;color:var(--muted);padding-left:1.2rem;margin:.5rem 0;">
+          <li>Firing range: 950 – 1100 °C</li>
+          <li>Very high Fe₂O₃ content (5–8%)</li>
+          <li>Porous — great for plants</li>
+          <li>Low shrinkage</li>
+        </ul>
+        <div class="card-formula">High-Fe kaolinite + iron oxides</div>
+      </div>
+
+    </div>
+
+    <!-- What makes clay plastic -->
+    <hr class="divider" />
+    <h3>Why Is Wet Clay Plastic?</h3>
+    <div class="two-col">
+      <div>
+        <p>
+          Kaolinite crystals are flat hexagonal platelets — like microscopic playing cards.
+          When wet, water molecules intercalate between layers, acting as a lubricant
+          that lets platelets slide over each other without breaking. This is <strong>plasticity</strong>.
+        </p>
+        <p>
+          As you dry clay, water leaves and the platelets bind together through
+          van der Waals forces and hydrogen bonding — the piece stiffens. At this
+          stage it is called <em>leather-hard</em> or <em>bone-dry</em>, and is
+          still reversible: add water and it can become plastic again.
+        </p>
+        <div class="note-box">
+          <strong>Key point:</strong> Before firing, clay is chemically just hydrated alumino-silicate.
+          The irreversible transformation only happens above ~450 °C when the
+          structural OH groups are permanently expelled.
+        </div>
+      </div>
+      <div>
+        <svg viewBox="0 0 320 200" style="width:100%;border-radius:10px;background:var(--surf2);border:1px solid var(--border);">
+          <defs>
+            <pattern id="dots" patternUnits="userSpaceOnUse" width="8" height="8">
+              <circle cx="4" cy="4" r="1" fill="rgba(72,136,200,.4)"/>
+            </pattern>
+          </defs>
+          <!-- Water molecules background -->
+          <rect width="320" height="200" fill="url(#dots)"/>
+
+          <!-- Layer 1: Si-O sheet -->
+          <rect x="20" y="30" width="280" height="22" rx="4" fill="rgba(240,160,48,.7)" />
+          <text x="160" y="45" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">Si–O Tetrahedral Sheet (SiO₂)</text>
+
+          <!-- Shared O layer -->
+          <rect x="20" y="52" width="280" height="8" rx="2" fill="rgba(220,80,30,.5)"/>
+
+          <!-- Layer 2: Al-O sheet -->
+          <rect x="20" y="60" width="280" height="22" rx="4" fill="rgba(140,190,160,.7)" />
+          <text x="160" y="75" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">Al–O(H) Octahedral Sheet (AlO₃)</text>
+
+          <!-- OH groups on top -->
+          <text x="30" y="100" font-size="9" fill="rgba(72,136,200,.9)" font-family="sans-serif">OH OH OH OH OH</text>
+
+          <!-- Water between layers arrow -->
+          <text x="160" y="115" text-anchor="middle" font-size="9" fill="rgba(72,136,200,.9)" font-family="sans-serif">↕ H₂O lubricates between layers ↕</text>
+
+          <!-- Second unit cell -->
+          <rect x="20" y="125" width="280" height="22" rx="4" fill="rgba(240,160,48,.7)" />
+          <text x="160" y="140" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">Si–O Tetrahedral Sheet</text>
+
+          <rect x="20" y="147" width="280" height="8" rx="2" fill="rgba(220,80,30,.5)"/>
+
+          <rect x="20" y="155" width="280" height="22" rx="4" fill="rgba(140,190,160,.7)" />
+          <text x="160" y="170" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">Al–O(H) Octahedral Sheet</text>
+
+          <text x="160" y="193" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">Kaolinite — 1:1 layer structure (repeating)</text>
+        </svg>
+
+        <div class="structure-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(240,160,48,.8)"></div> Si–O tetrahedral</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(140,190,160,.8)"></div> Al–O octahedral</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(220,80,30,.6)"></div> Shared oxygen</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(72,136,200,.6)"></div> Water / OH</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MOLECULAR STRUCTURE ───────────────────────────── -->
+<section id="structure">
+  <div class="container">
+    <h2>Kaolinite at the Atomic Level</h2>
+    <p class="section-intro">
+      The fundamental building block of all clay. Understanding its bonding explains
+      everything from plasticity to shrinkage to why ceramics are brittle.
+    </p>
+
+    <div class="structure-wrap">
+      <!-- SVG: tetrahedral/octahedral detail -->
+      <div>
+        <h3>Si–O Tetrahedron</h3>
+        <svg viewBox="0 0 260 220" style="width:100%;background:var(--surf2);border-radius:10px;border:1px solid var(--border);">
+          <!-- Central Si -->
+          <circle cx="130" cy="110" r="20" fill="#f0a030" stroke="#ffd080" stroke-width="2"/>
+          <text x="130" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="sans-serif">Si⁴⁺</text>
+
+          <!-- 4 oxygen corners -->
+          <circle cx="130" cy="40" r="15" fill="#e04828" stroke="#f08060" stroke-width="2"/>
+          <text x="130" y="45" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">O²⁻</text>
+
+          <circle cx="60" cy="155" r="15" fill="#e04828" stroke="#f08060" stroke-width="2"/>
+          <text x="60" y="160" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">O²⁻</text>
+
+          <circle cx="200" cy="155" r="15" fill="#e04828" stroke="#f08060" stroke-width="2"/>
+          <text x="200" y="160" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">O²⁻</text>
+
+          <circle cx="190" cy="60" r="15" fill="#e04828" stroke="#f08060" stroke-width="2"/>
+          <text x="190" y="65" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">O²⁻</text>
+
+          <!-- Bonds -->
+          <line x1="130" y1="90" x2="130" y2="55" stroke="rgba(255,200,80,.5)" stroke-width="3"/>
+          <line x1="115" y1="98" x2="73" y2="145" stroke="rgba(255,200,80,.5)" stroke-width="3"/>
+          <line x1="145" y1="98" x2="187" y2="145" stroke="rgba(255,200,80,.5)" stroke-width="3"/>
+          <line x1="145" y1="100" x2="178" y2="68" stroke="rgba(255,200,80,.5)" stroke-width="3"/>
+
+          <text x="130" y="205" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="sans-serif">Covalent Si–O bond (strong, 464 kJ/mol)</text>
+        </svg>
+        <p style="margin-top:.75rem;font-size:.88rem;color:var(--muted);">
+          Silicon sits in the center of four oxygen atoms arranged as a tetrahedron.
+          This Si–O–Si network is the skeleton of all silicate minerals.
+          Bond energy ≈ 464 kJ/mol — much stronger than most organic bonds.
+        </p>
+      </div>
+
+      <div>
+        <h3>Al–O Octahedron</h3>
+        <svg viewBox="0 0 260 220" style="width:100%;background:var(--surf2);border-radius:10px;border:1px solid var(--border);">
+          <!-- Central Al -->
+          <circle cx="130" cy="110" r="20" fill="#5090c0" stroke="#80c0f0" stroke-width="2"/>
+          <text x="130" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="sans-serif">Al³⁺</text>
+
+          <!-- 6 O/OH around Al (showing 5 in 2D projection) -->
+          <circle cx="130" cy="38" r="14" fill="#6aaa70" stroke="#90d090" stroke-width="2"/>
+          <text x="130" y="43" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">OH⁻</text>
+
+          <circle cx="55" cy="95" r="14" fill="#e04828" stroke="#f08060" stroke-width="2"/>
+          <text x="55" y="100" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">O²⁻</text>
+
+          <circle cx="205" cy="95" r="14" fill="#e04828" stroke="#f08060" stroke-width="2"/>
+          <text x="205" y="100" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">O²⁻</text>
+
+          <circle cx="55" cy="140" r="14" fill="#6aaa70" stroke="#90d090" stroke-width="2"/>
+          <text x="55" y="145" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">OH⁻</text>
+
+          <circle cx="205" cy="140" r="14" fill="#6aaa70" stroke="#90d090" stroke-width="2"/>
+          <text x="205" y="145" text-anchor="middle" font-size="10" fill="#fff" font-family="sans-serif">OH⁻</text>
+
+          <circle cx="130" cy="182" r="14" fill="#e04828" stroke="#f08060" stroke-width="2"/>
+          <text x="130" y="187" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">O²⁻</text>
+
+          <!-- Bonds -->
+          <line x1="130" y1="90" x2="130" y2="52" stroke="rgba(120,180,255,.4)" stroke-width="3"/>
+          <line x1="112" y1="105" x2="69" y2="100" stroke="rgba(120,180,255,.4)" stroke-width="3"/>
+          <line x1="148" y1="105" x2="191" y2="100" stroke="rgba(120,180,255,.4)" stroke-width="3"/>
+          <line x1="112" y1="120" x2="69" y2="135" stroke="rgba(120,180,255,.4)" stroke-width="3"/>
+          <line x1="148" y1="120" x2="191" y2="135" stroke="rgba(120,180,255,.4)" stroke-width="3"/>
+          <line x1="130" y1="130" x2="130" y2="168" stroke="rgba(120,180,255,.4)" stroke-width="3"/>
+
+          <text x="130" y="210" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="sans-serif">Al coordinated by 4 O²⁻ + 2 OH⁻ (octahedral)</text>
+        </svg>
+        <p style="margin-top:.75rem;font-size:.88rem;color:var(--muted);">
+          Aluminium is surrounded by 6 oxygen/hydroxyl groups in an octahedral arrangement.
+          The OH⁻ groups are the "chemical water" — they survive physical drying but are
+          driven out as steam above 450 °C, permanently changing the mineral.
+        </p>
+      </div>
+    </div>
+
+    <hr class="divider" />
+    <div class="note-box">
+      <strong>Why ceramics are hard but brittle:</strong> Fired ceramics are dominated by
+      covalent Si–O bonds (very strong, non-directional in glass) and ionic Al–O bonds.
+      These resist compression brilliantly but provide no way to redistribute stress around
+      a crack tip — hence brittleness. Metals are ductile because they have mobile
+      electrons; ceramics do not.
+    </div>
+  </div>
+</section>
+
+<!-- ── FIRING CHEMISTRY ──────────────────────────────── -->
+<section id="firing">
+  <div class="container">
+    <h2>The Firing Process — Temperature &amp; Chemistry</h2>
+    <p class="section-intro">
+      Firing is a sequence of irreversible chemical transformations. Each temperature
+      zone triggers a different reaction. Click any coloured zone on the chart to
+      learn what's happening inside your kiln.
+    </p>
+
+    <div class="chart-hint">Click a coloured zone to see the reaction details ↓</div>
+    <div id="chart-wrap">
+      <svg id="temp-svg" viewBox="0 0 860 380" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Background -->
+        <rect width="860" height="380" fill="transparent"/>
+
+        <!-- Chart axes area: x 70–820, y 20–320 -->
+
+        <!-- Zone bands (horizontal, by temp) -->
+        <!-- free water: 0-200°C = y 320 down to 249 -->
+        <rect class="zone-band" data-zone="water" x="70" y="249" width="750" height="71" fill="#3a6a9a" rx="3"/>
+        <!-- dehydrox: 450-600°C = y 177 to 142 -->
+        <rect class="zone-band" data-zone="dehydrox" x="70" y="142" width="750" height="35" fill="#c86020" rx="3"/>
+        <!-- quartz inv: 573°C line -->
+        <line x1="70" y1="155" x2="820" y2="155" stroke="#ff4040" stroke-width="2" stroke-dasharray="6,4" opacity=".8"/>
+        <!-- organic burnout: 200-600°C -->
+        <rect class="zone-band" data-zone="organic" x="70" y="177" width="750" height="72" fill="#806040" rx="3" opacity=".7"/>
+        <!-- mullite: 900-1100°C -->
+        <rect class="zone-band" data-zone="mullite" x="70" y="63" width="750" height="44" fill="#8a3090" rx="3"/>
+        <!-- vitrification: 1100-1350°C -->
+        <rect class="zone-band" data-zone="vitri" x="70" y="20" width="750" height="43" fill="#b88000" rx="3"/>
+
+        <!-- Y-axis labels -->
+        <text x="60" y="324" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">0°C</text>
+        <text x="60" y="249" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">200°C</text>
+        <text x="60" y="214" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">300°C</text>
+        <text x="60" y="177" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">450°C</text>
+        <text x="60" y="158" text-anchor="end" font-size="9" fill="#ff6060" font-family="sans-serif">573°C</text>
+        <text x="60" y="142" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">600°C</text>
+        <text x="60" y="107" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">900°C</text>
+        <text x="60" y="63" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">1100°C</text>
+        <text x="60" y="23" text-anchor="end" font-size="11" fill="#8a7e6a" font-family="sans-serif">1350°C</text>
+
+        <!-- Y-axis grid lines -->
+        <line x1="70" y1="320" x2="820" y2="320" stroke="#4a3e2e" stroke-width="1"/>
+        <line x1="70" y1="249" x2="820" y2="249" stroke="#4a3e2e" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="70" y1="177" x2="820" y2="177" stroke="#4a3e2e" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="70" y1="142" x2="820" y2="142" stroke="#4a3e2e" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="70" y1="107" x2="820" y2="107" stroke="#4a3e2e" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="70" y1="63" x2="820" y2="63" stroke="#4a3e2e" stroke-width="1" stroke-dasharray="4,4"/>
+
+        <!-- Y axis -->
+        <line x1="70" y1="20" x2="70" y2="330" stroke="#8a7e6a" stroke-width="1.5"/>
+        <text x="12" y="180" font-size="11" fill="#8a7e6a" font-family="sans-serif" transform="rotate(-90,12,180)">Temperature (°C)</text>
+
+        <!-- X-axis: firing time phases -->
+        <line x1="70" y1="330" x2="825" y2="330" stroke="#8a7e6a" stroke-width="1.5"/>
+
+        <!-- X-axis phase labels -->
+        <text x="165" y="348" text-anchor="middle" font-size="10" fill="#8a7e6a" font-family="sans-serif">Candling</text>
+        <text x="365" y="348" text-anchor="middle" font-size="10" fill="#8a7e6a" font-family="sans-serif">Bisque / Low-fire Ramp</text>
+        <text x="590" y="348" text-anchor="middle" font-size="10" fill="#8a7e6a" font-family="sans-serif">High-fire Ramp</text>
+        <text x="740" y="348" text-anchor="middle" font-size="10" fill="#8a7e6a" font-family="sans-serif">Peak + Cool</text>
+
+        <!-- Firing curve (stoneware typical, time on x) -->
+        <!-- Path through: start low, ramp, slow at quartz, continue, peak at 1250°C, hold, cool -->
+        <path d="M 70,320
+                 C 90,320 110,310 140,290
+                 C 160,278 175,262 200,254
+                 C 220,248 235,243 260,234
+                 C 280,227 295,217 318,195
+                 C 335,178 342,162 358,156
+                 C 372,150 380,145 400,136
+                 C 425,125 450,110 480,92
+                 C 510,75 535,60 560,44
+                 C 575,36 590,28 610,24
+                 C 630,20 650,20 670,20
+                 C 690,20 700,20 710,22
+                 C 730,30 750,80 770,130
+                 C 785,168 800,220 820,290"
+              fill="none" stroke="#ff8040" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Labels on zones -->
+        <text x="445" y="267" text-anchor="middle" font-size="11" fill="rgba(180,220,255,.9)" font-family="sans-serif" font-weight="bold">Free Water Evaporation (0–200°C)</text>
+        <text x="445" y="192" text-anchor="middle" font-size="10" fill="rgba(255,210,160,.9)" font-family="sans-serif" font-weight="bold">Organic Burnout / CO₂ Release</text>
+        <text x="445" y="153" text-anchor="middle" font-size="10" fill="rgba(255,120,80,.95)" font-family="sans-serif" font-weight="bold">Dehydroxylation (450–600°C)</text>
+        <text x="445" y="87" text-anchor="middle" font-size="11" fill="rgba(220,150,255,.9)" font-family="sans-serif" font-weight="bold">Mullite Formation (900–1100°C)</text>
+        <text x="445" y="43" text-anchor="middle" font-size="11" fill="rgba(255,220,80,.9)" font-family="sans-serif" font-weight="bold">Vitrification (1100–1350°C)</text>
+
+        <!-- Quartz inversion label -->
+        <text x="825" y="153" text-anchor="end" font-size="9" fill="#ff6060" font-family="sans-serif">⬅ 573°C Quartz inversion</text>
+
+        <!-- Firing curve label -->
+        <text x="620" y="18" font-size="10" fill="#ff8040" font-family="sans-serif">— Typical stoneware firing curve</text>
+
+        <!-- Arrow for Y axis -->
+        <polygon points="70,18 66,26 74,26" fill="#8a7e6a"/>
+      </svg>
+    </div>
+
+    <!-- Zone detail panel -->
+    <div id="zone-detail">
+      <div id="zone-content"></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="structure-legend" style="margin-top:1.25rem;">
+      <div class="legend-item"><div class="legend-dot" style="background:#3a6a9a"></div> Free water</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#806040"></div> Organic burnout</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c86020"></div> Dehydroxylation</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8a3090"></div> Mullite formation</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#b88000"></div> Vitrification</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ff4040"></div> Quartz inversion 573°C</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── GLAZE CHEMISTRY ───────────────────────────────── -->
+<section id="glazes">
+  <div class="container">
+    <h2>Glaze Chemistry</h2>
+    <p class="section-intro">
+      A glaze is applied glass. Every glaze is a balance of three chemical roles:
+      network <strong>formers</strong> (build the glass skeleton),
+      <strong>fluxes</strong> (lower the melting point), and
+      <strong>stabilisers</strong> (give viscosity so the glaze doesn't run off).
+    </p>
+
+    <div class="glaze-grid">
+      <!-- Left: explanation -->
+      <div>
+        <h3>The Three-Component System</h3>
+
+        <div style="margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+            <div style="width:18px;height:18px;border-radius:50%;background:#4888c8;flex-shrink:0;"></div>
+            <strong>Network Former — SiO₂ (Silica)</strong>
+          </div>
+          <p style="font-size:.9rem;color:var(--muted);padding-left:1.7rem;">
+            Forms the glass structure. More silica = higher melting point,
+            more durable, higher viscosity. Pure silica melts at ~1710°C —
+            too high to be useful alone.
+          </p>
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+            <div style="width:18px;height:18px;border-radius:50%;background:#c86020;flex-shrink:0;"></div>
+            <strong>Flux — RO/R₂O (alkaline/alkaline-earth oxides)</strong>
+          </div>
+          <p style="font-size:.9rem;color:var(--muted);padding-left:1.7rem;">
+            Break Si–O–Si bonds, lowering the melt temperature.
+            Common fluxes: feldspar (K₂O, Na₂O), calcium carbonate (CaCO₃ → CaO),
+            lithium carbonate (Li₂CO₃ → Li₂O), whiting.
+          </p>
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+            <div style="width:18px;height:18px;border-radius:50%;background:#4a9060;flex-shrink:0;"></div>
+            <strong>Stabiliser — Al₂O₃ (Alumina)</strong>
+          </div>
+          <p style="font-size:.9rem;color:var(--muted);padding-left:1.7rem;">
+            Increases viscosity so the glaze holds on vertical surfaces.
+            Also improves durability, hardness, and resistance to leaching.
+            Typically introduced as clay or feldspar.
+          </p>
+        </div>
+
+        <div class="note-box">
+          <strong>Seger unity formula:</strong> All glazes can be expressed as
+          <code>R₂O·RO | R₂O₃ | nSiO₂</code> — a molecular ratio where the
+          flux oxides sum to 1.0. This lets ceramicists compare glazes and predict
+          melt behaviour independent of batch size.
+        </div>
+      </div>
+
+      <!-- Right: interactive glaze explorer -->
+      <div>
+        <h3>Glaze Type Explorer</h3>
+        <div class="glaze-selector" id="glaze-selector">
+          <button class="glaze-btn active" data-glaze="celadon">Celadon</button>
+          <button class="glaze-btn" data-glaze="satin">Satin Matt</button>
+          <button class="glaze-btn" data-glaze="shino">Shino</button>
+          <button class="glaze-btn" data-glaze="tenmoku">Tenmoku</button>
+          <button class="glaze-btn" data-glaze="ash">Wood Ash</button>
+        </div>
+
+        <div id="glaze-bars"></div>
+        <div class="glaze-preview" id="glaze-preview"></div>
+        <p id="glaze-desc" style="margin-top:.75rem;font-size:.88rem;color:var(--muted);"></p>
+
+        <hr class="divider"/>
+
+        <h3>Common Flux Materials</h3>
+        <table class="reaction-table" style="font-size:.82rem;">
+          <tr><th>Material</th><th>Active Oxide</th><th>Fire Temp</th></tr>
+          <tr><td>Potassium feldspar</td><td><code>K₂O·Al₂O₃·6SiO₂</code></td><td>High</td></tr>
+          <tr><td>Whiting (CaCO₃)</td><td><code>CaO</code></td><td>Mid–High</td></tr>
+          <tr><td>Lithium carbonate</td><td><code>Li₂O</code></td><td>Low–Mid</td></tr>
+          <tr><td>Talc (Mg₃Si₄O₁₀)</td><td><code>MgO</code></td><td>Mid</td></tr>
+          <tr><td>Zinc oxide</td><td><code>ZnO</code></td><td>Mid–High</td></tr>
+          <tr><td>Bone ash</td><td><code>Ca₃(PO₄)₂</code></td><td>High</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COLORANTS ─────────────────────────────────────── -->
+<section id="colorants">
+  <div class="container">
+    <h2>Metal Oxide Colorants</h2>
+    <p class="section-intro">
+      Glaze colour comes from transition metal oxides dissolved in the glass matrix.
+      The same oxide can produce different colours depending on oxidation state,
+      firing atmosphere, and surrounding chemistry. Click any tile to learn more.
+    </p>
+
+    <div class="colorant-grid" id="colorant-grid">
+    </div>
+  </div>
+</section>
+
+<!-- ── ATMOSPHERE ────────────────────────────────────── -->
+<section id="atmosphere">
+  <div class="container">
+    <h2>Oxidation vs. Reduction Firing</h2>
+    <p class="section-intro">
+      The amount of oxygen in your kiln at peak temperature determines which oxidation
+      states metal oxides adopt — completely changing the final colour of clay and glaze.
+    </p>
+
+    <div class="atm-toggle">
+      <button class="atm-btn active" id="atm-ox">Oxidation (Electric)</button>
+      <button class="atm-btn" id="atm-red">Reduction (Gas/Wood)</button>
+    </div>
+
+    <div class="atm-panels">
+      <div class="atm-panel" id="atm-panel-left">
+        <h3 id="atm-left-title">Oxidation Atmosphere</h3>
+        <p id="atm-left-body" style="font-size:.9rem;color:var(--muted);"></p>
+        <div class="atm-swatch-row" id="atm-left-swatches"></div>
+        <div id="atm-left-eq" class="zone-eq"></div>
+      </div>
+      <div class="atm-panel" id="atm-panel-right">
+        <h3 id="atm-right-title">Reduction Atmosphere</h3>
+        <p id="atm-right-body" style="font-size:.9rem;color:var(--muted);"></p>
+        <div class="atm-swatch-row" id="atm-right-swatches"></div>
+        <div id="atm-right-eq" class="zone-eq"></div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <h3>How Reduction Works</h3>
+    <div class="two-col">
+      <div>
+        <p style="font-size:.9rem;">
+          In a gas or wood kiln, you can starve the chamber of oxygen by increasing
+          fuel flow relative to air input. Carbon monoxide (CO) builds up:
+        </p>
+        <div class="zone-eq">CO + O²⁻ (from oxide) → CO₂ + reduced metal</div>
+        <p style="font-size:.9rem;">
+          The CO strips oxygen from metal oxides, reducing them to lower oxidation states.
+          Iron(III) Fe₂O₃ → Iron(II) FeO. Copper(II) CuO → Copper(I) Cu₂O or even
+          metallic Cu — giving the famous copper-red (ox-blood) glaze.
+        </p>
+      </div>
+      <div>
+        <p style="font-size:.9rem;">
+          In an <strong>electric kiln</strong>, the elements heat without combustion,
+          so the atmosphere is always oxidising — you get the "clean" oxidised colours.
+          This is most home potters' reality.
+        </p>
+        <p style="font-size:.9rem;">
+          <strong>Saggar reduction</strong> is a workaround: seal pots inside a
+          ceramic box (saggar) with combustibles (sawdust, banana peel). Locally
+          reducing atmosphere even in an electric kiln.
+        </p>
+        <div class="note-box" style="font-size:.85rem;">
+          <strong>Safety:</strong> Reduction firing produces CO — always fire gas/wood
+          kilns in well-ventilated outdoor or purpose-built spaces. Never attempt
+          true reduction in an unvented indoor electric kiln.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── REACTIONS REFERENCE ──────────────────────────── -->
+<section id="reactions">
+  <div class="container">
+    <h2>Complete Reactions Reference</h2>
+    <p class="section-intro">All the key chemical equations that occur from raw clay to finished ceramic.</p>
+
+    <div style="overflow-x:auto;">
+      <table class="reaction-table">
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>Temperature</th>
+            <th>Reaction / Equation</th>
+            <th>Effect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Free water loss</td>
+            <td>100–200°C</td>
+            <td class="eq">H₂O (adsorbed) → H₂O (g)</td>
+            <td>Clay stiffens; reversible if rewetted before this stage</td>
+          </tr>
+          <tr>
+            <td>Organic burnout</td>
+            <td>200–600°C</td>
+            <td class="eq">CₙHₘ + O₂ → CO₂ + H₂O</td>
+            <td>Black carbon core visible mid-fire; must complete before glaze seals surface</td>
+          </tr>
+          <tr>
+            <td>Quartz inversion</td>
+            <td>573°C (both ways)</td>
+            <td class="eq">SiO₂ (α-quartz) ⇌ SiO₂ (β-quartz)</td>
+            <td>Sudden 2% volume change; cracking if heated/cooled too fast through this point</td>
+          </tr>
+          <tr>
+            <td>Dehydroxylation</td>
+            <td>450–600°C</td>
+            <td class="eq">Al₂Si₂O₅(OH)₄ → Al₂Si₂O₇ + 2H₂O↑</td>
+            <td>Kaolinite → metakaolinite; IRREVERSIBLE; structural OH expelled as steam</td>
+          </tr>
+          <tr>
+            <td>Spinel formation</td>
+            <td>900–1000°C</td>
+            <td class="eq">2Al₂Si₂O₇ → 2Al₂O₃·SiO₂ (spinel-like) + 2SiO₂</td>
+            <td>Intermediate metastable phase; piece darkens briefly</td>
+          </tr>
+          <tr>
+            <td>Mullite formation</td>
+            <td>1000–1100°C</td>
+            <td class="eq">3Al₂Si₂O₇ → Al₆Si₂O₁₃ + 4SiO₂</td>
+            <td>Mullite needles interlock; primary source of strength and refractoriness</td>
+          </tr>
+          <tr>
+            <td>Flux reaction (whiting)</td>
+            <td>700–900°C</td>
+            <td class="eq">CaCO₃ → CaO + CO₂↑</td>
+            <td>CO₂ release; CaO remains as flux in glaze melt</td>
+          </tr>
+          <tr>
+            <td>Iron oxidation</td>
+            <td>Any temp, oxidation</td>
+            <td class="eq">4FeO + O₂ → 2Fe₂O₃</td>
+            <td>Red/brown colours; FeO (black) → Fe₂O₃ (red)</td>
+          </tr>
+          <tr>
+            <td>Iron reduction</td>
+            <td>High temp, reduction</td>
+            <td class="eq">Fe₂O₃ + CO → 2FeO + CO₂</td>
+            <td>Blue-grey celadon and tenmoku tones; Fe³⁺ → Fe²⁺</td>
+          </tr>
+          <tr>
+            <td>Copper reduction</td>
+            <td>1250°C+, reduction</td>
+            <td class="eq">2CuO + CO → Cu₂O + CO₂</td>
+            <td>Ox-blood / flambe red; Cu²⁺(green) → Cu⁺(red)</td>
+          </tr>
+          <tr>
+            <td>Vitrification</td>
+            <td>1100–1350°C</td>
+            <td class="eq">Clay minerals + feldspars → amorphous glass phase</td>
+            <td>Pores filled; piece becomes waterproof; density increases; shrinkage continues</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOME TIPS ─────────────────────────────────────── -->
+<section id="home">
+  <div class="container">
+    <h2>Home Ceramics — Chemistry in Practice</h2>
+    <p class="section-intro">
+      Understanding the chemistry helps you avoid the most common failures
+      and get consistent results from your home kiln.
+    </p>
+
+    <div class="tip-grid">
+
+      <div class="tip-card">
+        <div class="tip-icon">💧</div>
+        <h4>Dry Slowly</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Free water must leave before firing. Uneven drying = differential shrinkage = cracks.
+          Cover pieces with plastic to slow the edges. Completely bone-dry before any heat.
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🌡️</div>
+        <h4>Slow Through 573°C</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          The quartz inversion causes a sudden 2% volume change. Ramp ≤ 100°C/hr through
+          500–620°C, both going up AND cooling down. This is the #1 cause of dunting (cold cracks).
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">♻️</div>
+        <h4>Don't Seal Carbon In</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Organic matter must fully combust before the glaze seals the surface (~900°C).
+          If you fire too fast, CO₂ bubbles get trapped → pinholes and crawling. Bisque first.
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🔬</div>
+        <h4>Test Glaze Thickness</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Glaze chemistry assumes a specific application thickness (~1.5mm wet).
+          Too thin = bare patches. Too thick = crawling or drips. Test tiles first.
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🍽️</div>
+        <h4>Food Safety</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Underfired glazes are porous and can leach colorants (Pb, Ba, Li).
+          Always fire to the rated cone. All modern commercial glazes are lead-free,
+          but verify before use on food surfaces. Check with a commercial glaze test service.
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🧪</div>
+        <h4>Match Clay & Glaze COE</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Coefficient of thermal expansion (COE) must match between clay and glaze.
+          Glaze COE slightly lower than clay body = compression = good. Glaze COE
+          higher = tension = crazing (fine cracks) or shivering (flaking).
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">⚡</div>
+        <h4>Electric Kiln = Oxidation</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Home electric kilns always fire in an oxidising atmosphere. Buy glazes
+          rated for oxidation. Reduction glazes won't behave as labelled.
+          Ventilate the room — clay, binders, and organics all off-gas during firing.
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">📐</div>
+        <h4>Expect Shrinkage</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Clay shrinks 8–15% during drying and firing (stoneware ~12%, porcelain up to 15%).
+          This is water leaving + vitrification densifying the body. Design for it.
+        </p>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🛡️</div>
+        <h4>Kiln Wash the Shelf</h4>
+        <p style="font-size:.88rem;color:var(--muted);">
+          Kiln wash (alumina hydrate + kaolin + water) prevents glaze drips bonding
+          to your shelf. The alumina has a very high melting point and won't fuse,
+          acting as a sacrificial release layer.
+        </p>
+      </div>
+
+    </div>
+
+    <hr class="divider"/>
+
+    <h3>Typical Home Firing Schedule (Stoneware, Electric)</h3>
+    <svg viewBox="0 0 760 200" style="width:100%;max-width:760px;display:block;background:var(--surf2);border-radius:10px;border:1px solid var(--border);padding:10px;">
+      <!-- Schedule bars -->
+      <!-- Bar: candling 0-2h -->
+      <rect x="40" y="30" width="80" height="30" rx="4" fill="rgba(72,136,200,.6)"/>
+      <text x="80" y="50" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">Candle</text>
+      <text x="80" y="72" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">0–2h / 80°C</text>
+
+      <!-- Slow ramp 2-5h -->
+      <rect x="122" y="30" width="100" height="30" rx="4" fill="rgba(180,100,40,.6)"/>
+      <text x="172" y="50" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">Slow ramp</text>
+      <text x="172" y="72" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">2–5h / 80°C/hr</text>
+
+      <!-- Quartz zone -->
+      <rect x="224" y="20" width="80" height="40" rx="4" fill="rgba(220,60,40,.5)"/>
+      <text x="264" y="43" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">⚠ 573°C zone</text>
+      <text x="264" y="72" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">100°C/hr max</text>
+
+      <!-- Mid ramp -->
+      <rect x="306" y="30" width="100" height="30" rx="4" fill="rgba(180,100,40,.6)"/>
+      <text x="356" y="50" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">Continue ramp</text>
+      <text x="356" y="72" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">150°C/hr</text>
+
+      <!-- Final ramp -->
+      <rect x="408" y="30" width="100" height="30" rx="4" fill="rgba(220,120,30,.6)"/>
+      <text x="458" y="50" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">Final ramp</text>
+      <text x="458" y="72" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">100°C/hr to peak</text>
+
+      <!-- Hold -->
+      <rect x="510" y="30" width="60" height="30" rx="4" fill="rgba(184,128,0,.7)"/>
+      <text x="540" y="50" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">Hold</text>
+      <text x="540" y="72" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">15–30min</text>
+
+      <!-- Cooling -->
+      <rect x="572" y="30" width="140" height="30" rx="4" fill="rgba(72,100,136,.5)"/>
+      <text x="642" y="50" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">Slow cool (kiln off)</text>
+      <text x="642" y="72" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="sans-serif">Don't open until &lt;200°C</text>
+
+      <!-- Temperature arc above -->
+      <path d="M 40,90 C 120,90 200,90 264,90 C 300,90 350,95 400,105 C 430,112 460,125 490,135 C 515,142 530,145 540,145 C 550,145 560,140 580,130 C 620,115 660,100 710,92"
+            fill="none" stroke="#ff8040" stroke-width="2" stroke-dasharray="4,2" opacity=".6"/>
+
+      <!-- Timeline labels -->
+      <text x="400" y="100" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="sans-serif">← Typical total: 10–14 hours up + 8–12 hours cooling →</text>
+      <text x="400" y="115" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="sans-serif">Never open before 200°C — thermal shock will crack the ware</text>
+
+      <!-- Safety note -->
+      <rect x="40" y="130" width="680" height="55" rx="6" fill="rgba(212,106,40,.12)" stroke="rgba(212,106,40,.3)" stroke-width="1"/>
+      <text x="380" y="152" text-anchor="middle" font-size="10" fill="var(--accent2)" font-family="sans-serif" font-weight="bold">Key: Slow through 500–650°C both up and down (quartz inversion)</text>
+      <text x="380" y="167" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="sans-serif">Bisque: peak ~1000°C · Glaze fire: peak depends on clay body (cone 6 ≈ 1222°C, cone 10 ≈ 1305°C)</text>
+      <text x="380" y="179" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="sans-serif">Ventilate during firing · Keep area clear · Don't fire wet clay</text>
+    </svg>
+
+  </div>
+</section>
+
+<footer>
+  <p>🏺 Ceramics Chemistry — Interactive Learning Tool</p>
+  <p style="margin-top:.5rem;">Built for home potters who want to understand the science behind the craft.</p>
+</footer>
+
+<!-- ── JAVASCRIPT ─────────────────────────────────────── -->
+<script>
+
+// ── FIRING ZONE DATA ──────────────────────────────────
+const ZONES = {
+  water: {
+    title: 'Free Water Evaporation',
+    range: '100 – 200 °C',
+    color: '#3a6a9a',
+    equation: 'H₂O (adsorbed/pore) → H₂O (gas)',
+    body: `
+      <p>Physical water trapped in the pores of the clay body evaporates. This is the same
+      water you use to make the clay plastic — it's physically held, not chemically bonded.</p>
+      <p>This stage is reversible right up until firing: if you rewetted bone-dry clay, it
+      would become plastic again. After this stage completes, all pore water is gone and the
+      piece is ready for the chemical transformations to begin.</p>
+      <p><strong>Practical note:</strong> If you fire too fast here, steam pressure builds
+      faster than it can escape through the clay walls — causing explosive cracking. Always
+      "candle" (hold at 80–120°C) for at least 1–2 hours for thick pieces, and ensure
+      ware is completely bone-dry before loading the kiln.</p>
+    `,
+    tags: ['Reversible', 'Physical change', 'Steam release'],
+  },
+  organic: {
+    title: 'Organic Burnout & Carbon Oxidation',
+    range: '200 – 600 °C',
+    color: '#806040',
+    equation: 'Cₙ Hₘ + O₂ → n CO₂ + ½m H₂O',
+    body: `
+      <p>All organic matter in the clay — plant material, humus, added organics like CMC binder
+      or paper clay fibres — combusts in the presence of oxygen. You may see the piece turn black
+      mid-fire as carbon forms before it oxidises away. This is completely normal in bisque firing.</p>
+      <p>Carbon <em>must</em> be fully burned out before the glaze melts and seals the surface.
+      If carbon is trapped under a sealed glaze, it continues to release CO₂, creating bloating,
+      pinholes, and craters in the final glaze surface.</p>
+      <p><strong>Practical note:</strong> This is why you bisque-fire before glazing, and why a
+      slow ramp through this temperature range matters. Firing cone 06 (~1000°C) for bisque gives
+      full carbon burnout.</p>
+    `,
+    tags: ['Irreversible', 'Gas release', 'Oxidation only'],
+  },
+  dehydrox: {
+    title: 'Dehydroxylation — Chemical Water Loss',
+    range: '450 – 600 °C',
+    color: '#c86020',
+    equation: 'Al₂Si₂O₅(OH)₄ → Al₂Si₂O₇ + 2H₂O↑',
+    body: `
+      <p>This is the most chemically significant transformation in the entire firing process.
+      The OH (hydroxyl) groups that are part of the kaolinite crystal structure — <em>not</em>
+      merely adsorbed water — are permanently driven out as steam.</p>
+      <p>The product, <strong>metakaolinite</strong> (Al₂Si₂O₇), is a disordered, amorphous phase
+      with no long-range crystal structure. This transformation is completely and permanently
+      irreversible — once fired through this zone, clay can never be reconstituted by adding water.
+      The piece now has a hard, dry character even before any sintering occurs.</p>
+      <p>The 573°C quartz inversion also falls within this range — a phase transition in any
+      free quartz (SiO₂) present in the clay body, where α-quartz rapidly converts to β-quartz
+      with a 2% volume expansion. This must be traversed slowly (≤100°C/hr) in both directions.</p>
+    `,
+    tags: ['Irreversible', 'Crystal structure destroyed', 'Steam release', '⚠ Quartz inversion nearby'],
+  },
+  mullite: {
+    title: 'Mullite Crystal Formation',
+    range: '900 – 1100 °C',
+    color: '#8a3090',
+    equation: '3Al₂Si₂O₇ → Al₆Si₂O₁₃ (mullite) + 4SiO₂',
+    body: `
+      <p>Metakaolinite breaks down and reorganises into <strong>mullite</strong>
+      (3Al₂O₃·2SiO₂), a needle-like crystalline mineral that is the primary structural
+      component responsible for the strength and thermal stability of fired ceramics.</p>
+      <p>Mullite needles interlock as they form, creating a reinforcing network — much like
+      fibres in a composite material. This is why properly fired stoneware and porcelain are
+      so much stronger than earthenware: they have more mullite.</p>
+      <p>The free silica (SiO₂) released contributes to the glassy phase. At this stage, the
+      piece has significant strength even without full vitrification. Flux minerals (feldspar)
+      begin to melt around 1100°C, creating liquid glass that fills pores.</p>
+      <p><strong>Alumina (Al₂O₃) content</strong> in the glaze acts as a nucleating agent for
+      crystalline surfaces — high-alumina glazes can produce matte crystalline effects.</p>
+    `,
+    tags: ['Irreversible', 'Strength building', 'Crystal growth', 'Needle structure'],
+  },
+  vitri: {
+    title: 'Vitrification — Glass Phase Formation',
+    range: '1100 – 1350 °C',
+    color: '#b88000',
+    equation: 'Feldspars + SiO₂ + fluxes → amorphous aluminosilicate glass',
+    body: `
+      <p><strong>Vitrification</strong> is the process by which the clay body becomes glassy
+      and non-porous. Feldspar minerals melt first (around 1100°C) and flow as viscous liquid
+      into the pore spaces, bonding particles together. As temperature rises, more of the matrix
+      melts and fuses.</p>
+      <p>The glassy phase is an amorphous (non-crystalline) aluminosilicate — similar in
+      composition to the glaze on the surface. The key difference from glass is that mullite
+      crystals remain embedded in the glass, preventing catastrophic crack propagation.</p>
+      <p>The degree of vitrification determines:</p>
+      <ul style="padding-left:1.2rem;font-size:.9rem;color:var(--muted);margin:.5rem 0;">
+        <li><strong>Water absorption</strong> — fully vitrified = 0% (food safe without glaze)</li>
+        <li><strong>Translucency</strong> — porcelain becomes translucent when glass dominates</li>
+        <li><strong>Strength</strong> — peaks at optimal vitrification; over-fired = slumping</li>
+        <li><strong>Shrinkage</strong> — body densifies, final shrinkage occurs here</li>
+      </ul>
+      <p><strong>Glaze melting</strong> also occurs in this zone. The glaze flows, levels,
+      and fuses to the clay body — a glass-ceramic interface forms that is actually
+      stronger than either material alone.</p>
+    `,
+    tags: ['Irreversible', 'Glass formation', 'Pore closure', 'Max shrinkage'],
+  },
+};
+
+// ── RENDER ZONE DETAILS ───────────────────────────────
+let activeZone = null;
+document.querySelectorAll('.zone-band').forEach(el => {
+  el.addEventListener('click', () => {
+    const key = el.dataset.zone;
+    const z = ZONES[key];
+    if (!z) return;
+
+    document.querySelectorAll('.zone-band').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+
+    const detail = document.getElementById('zone-detail');
+    const content = document.getElementById('zone-content');
+
+    content.innerHTML = `
+      <div style="display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;">
+        <h3 style="color:${z.color};margin:0;">${z.title}</h3>
+        <span class="temp-range-badge">${z.range}</span>
+      </div>
+      ${z.tags.map(t => `<span class="tag" style="background:rgba(255,255,255,.07);color:var(--muted);">${t}</span>`).join('')}
+      ${z.body}
+      <div class="zone-eq">${z.equation}</div>
+    `;
+    detail.classList.add('visible');
+    detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+});
+
+
+// ── GLAZE EXPLORER ────────────────────────────────────
+const GLAZES = {
+  celadon: {
+    label: 'Celadon',
+    silica: 72, alumina: 12, flux: 16,
+    color: 'linear-gradient(135deg, #7ab890 0%, #5a9870 50%, #8acc98 100%)',
+    desc: 'Iron celadon: 1–3% iron oxide (Fe₂O₃) in a fluid high-silica base. In reduction, Fe³⁺ reduces to Fe²⁺ giving the soft jade-green. In oxidation, produces yellow-tan. Ancient Chinese potters perfected this at cone 10 reduction.',
+  },
+  satin: {
+    label: 'Satin Matt',
+    silica: 55, alumina: 20, flux: 25,
+    color: 'linear-gradient(135deg, #d4c8b8 0%, #c0b0a0 50%, #ccc0b0 100%)',
+    desc: 'High alumina relative to silica creates an underfired surface — the glaze stiffens before fully melting, trapping a micro-crystalline texture. The matt surface comes from the incomplete fusion of mullite crystals at the glaze surface.',
+  },
+  shino: {
+    label: 'Shino',
+    silica: 60, alumina: 8, flux: 32,
+    color: 'linear-gradient(135deg, #e8c8a0 0%, #d4a870 30%, #f0e0c8 60%, #e04020 90%)',
+    desc: 'Very high feldspar, low alumina, thick application. The characteristic orange-red flashing comes from iron-rich clay body showing through a porous, crawling glaze. Carbon trapping from wood/soda firing creates black marks. An inherently unpredictable glaze.',
+  },
+  tenmoku: {
+    label: 'Tenmoku',
+    silica: 65, alumina: 14, flux: 21,
+    color: 'linear-gradient(135deg, #1a0800 0%, #2a1000 30%, #8a4000 60%, #c08020 90%)',
+    desc: 'High iron (8–12% Fe₂O₃) in reduction. The iron-rich glaze creates a jet-black surface with characteristic rust/gold hare\'s fur streaks where iron crystals precipitate during cooling. The famous "oil spot" tenmoku has spherical iron crystal blooms.',
+  },
+  ash: {
+    label: 'Wood Ash',
+    silica: 50, alumina: 10, flux: 40,
+    color: 'linear-gradient(135deg, #708860 0%, #507040 40%, #90b070 70%, #c8d0a0 100%)',
+    desc: 'Wood ash is a natural glaze: it\'s rich in calcium (CaO), potassium (K₂O), silica, and phosphorus. At high temperatures, ash deposits on kiln walls and pottery melt into varied greens, yellows, and browns depending on ash source, thickness, and atmosphere.',
+  },
+};
+
+function renderGlazeBar(label, pct, color, description) {
+  return `
+    <div class="glaze-bar-group">
+      <div class="glaze-bar-label">
+        <span>${label} — ${description}</span>
+        <span>${pct}%</span>
+      </div>
+      <div class="glaze-bar-track">
+        <div class="glaze-bar-fill" style="width:${pct}%;background:${color};"></div>
+      </div>
+    </div>
+  `;
+}
+
+function setGlaze(key) {
+  const g = GLAZES[key];
+  document.getElementById('glaze-bars').innerHTML =
+    renderGlazeBar('SiO₂ (Network former)', g.silica, '#4888c8', 'Silica — glass skeleton') +
+    renderGlazeBar('Al₂O₃ (Stabiliser)', g.alumina, '#4a9060', 'Alumina — viscosity & durability') +
+    renderGlazeBar('Fluxes (RO/R₂O)', g.flux, '#c86020', 'Feldspar/CaO/MgO etc.');
+  document.getElementById('glaze-preview').style.background = g.color;
+  document.getElementById('glaze-desc').textContent = g.desc;
+  document.querySelectorAll('.glaze-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.glaze === key);
+  });
+}
+
+document.querySelectorAll('.glaze-btn').forEach(btn => {
+  btn.addEventListener('click', () => setGlaze(btn.dataset.glaze));
+});
+setGlaze('celadon');
+
+
+// ── COLORANTS ─────────────────────────────────────────
+const COLORANTS = [
+  {
+    name: 'Iron Oxide',
+    oxide: 'Fe₂O₃ / FeO',
+    swatchBg: 'linear-gradient(135deg,#8a3010,#c05020,#e08040)',
+    emoji: '🟤',
+    colors: ['Red/brown (ox)', 'Celadon green (red)', 'Black (high conc.)'],
+    detail: `
+      <strong>Iron oxide</strong> is the most versatile ceramic colorant. It changes radically depending on:
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li><strong>Oxidation (Fe³⁺ → Fe₂O₃):</strong> Warm reds, ambers, tans, ochres. 1–4% gives tan; 4–10% gives brick red.</li>
+        <li><strong>Reduction (Fe³⁺ → Fe²⁺ as FeO):</strong> Muted blue-greens (celadon at 1–2%), iron-grey, olive. The jade-like celadon colour is entirely due to FeO in reduction.</li>
+        <li><strong>High concentration + reduction:</strong> Tenmoku (8–12% Fe₂O₃) — jet black with gold/rust oil spots or hare's fur crystals as iron precipitates on cooling.</li>
+        <li><strong>Red iron oxide (Fe₂O₃), yellow ochre (FeO·OH), black iron (Fe₃O₄):</strong> All convert to the same active species in the melt, but particle size affects flux melting.</li>
+      </ul>
+      Chemistry: Fe₂O₃ + CO → 2FeO + CO₂ (reduction)
+    `,
+  },
+  {
+    name: 'Cobalt Oxide',
+    oxide: 'CoO / Co₃O₄',
+    swatchBg: 'linear-gradient(135deg,#1030a0,#2050d0,#4080f0)',
+    emoji: '🔵',
+    colors: ['Brilliant blue (both)'],
+    detail: `
+      <strong>Cobalt oxide</strong> is the most powerful and reliable blue in ceramics. Even 0.25% gives a noticeable blue; 1–2% is saturated cobalt blue. It is atmosphere-stable — behaves the same in oxidation or reduction, making it uniquely reliable.
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li>Co²⁺ ion in silicate glass absorbs red/orange light, transmitting blue.</li>
+        <li>In high-alumina glazes: bright, clean blue. In high-silica glazes: slightly greener.</li>
+        <li>With added magnesium (MgO): lavender or purple shifts.</li>
+        <li>Combined with iron: grey-blue or navy.</li>
+        <li>Too much (>3%): metallic black surface.</li>
+      </ul>
+      Chinese blue-and-white porcelain (from ~900 CE) uses cobalt — the same chemistry as modern cobalt blue glazes.
+    `,
+  },
+  {
+    name: 'Copper Oxide',
+    oxide: 'CuO / Cu₂O',
+    swatchBg: 'linear-gradient(135deg,#107040,#208050,#40c060)',
+    emoji: '🟢',
+    colors: ['Green (oxidation)', 'Ox-blood red (reduction)'],
+    detail: `
+      <strong>Copper oxide</strong> undergoes one of the most dramatic atmosphere-dependent colour changes:
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li><strong>Oxidation (Cu²⁺ as CuO):</strong> Greens and turquoise. 1–3% gives bright green; in alkaline glazes (high Na/Li), turquoise to peacock blue.</li>
+        <li><strong>Reduction (Cu⁺ as Cu₂O):</strong> The famous <em>ox-blood (sang de boeuf)</em> or flambe red. 0.5–1% copper in a specific flux base at cone 10 reduction gives deep blood red. Notoriously difficult to reproduce reliably.</li>
+        <li><strong>Heavy reduction to metallic Cu:</strong> Lustrous metallic surfaces (luster glazes).</li>
+      </ul>
+      Chemistry: 2CuO + CO → Cu₂O + CO₂ (reduction to cuprous → red)
+      <br>Cu₂O + CO → 2Cu + CO₂ (full reduction → metallic copper)
+    `,
+  },
+  {
+    name: 'Manganese Dioxide',
+    oxide: 'MnO₂',
+    swatchBg: 'linear-gradient(135deg,#502060,#703080,#9050a0)',
+    emoji: '🟣',
+    colors: ['Purple/plum (oxidation)', 'Brown (high conc.)'],
+    detail: `
+      <strong>Manganese dioxide</strong> gives purples, plums, and tawny browns:
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li>1–3% in a clear glaze: soft purple or lavender.</li>
+        <li>4–8%: deep plum to brown-purple.</li>
+        <li>In alkaline (high sodium) glazes: intensifies to blue-purple.</li>
+        <li>Combined with cobalt: deep navy or purple-black.</li>
+        <li>In reduction: may give metallic lustrous surface at very high concentrations.</li>
+        <li><strong>Health note:</strong> Manganese dust is a neurotoxin — always wear a respirator when mixing raw manganese oxide. Do not use on food surfaces at very high concentrations.</li>
+      </ul>
+    `,
+  },
+  {
+    name: 'Chromium Oxide',
+    oxide: 'Cr₂O₃',
+    swatchBg: 'linear-gradient(135deg,#1a5020,#2a7030,#3a9040)',
+    emoji: '🌿',
+    colors: ['Opaque green', 'Pink (with tin)', 'Brown (with iron)'],
+    detail: `
+      <strong>Chromium oxide</strong> is chemically stable and produces opaque greens, but reacts dramatically with other oxides:
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li><strong>Alone:</strong> Dull, opaque, refractory green. Does not flux easily.</li>
+        <li><strong>With tin oxide (SnO₂):</strong> Cr-Sn pink — the basis of classic "chrome-tin pink" stains.</li>
+        <li><strong>With zinc (ZnO):</strong> Brown to tan.</li>
+        <li><strong>With alumina in a very alkaline glaze:</strong> Ruby red (rare).</li>
+        <li><strong>Important:</strong> Chromium volatilises at high temperatures — don't fire chrome-bearing glazes next to tin-glazed ware in the same kiln, or you'll get unwanted pink blush on the tin piece.</li>
+      </ul>
+    `,
+  },
+  {
+    name: 'Rutile / Titanium',
+    oxide: 'TiO₂ / Rutile (TiO₂+Fe)',
+    swatchBg: 'linear-gradient(135deg,#c8b878,#e0d090,#f8f0c0)',
+    emoji: '🌾',
+    colors: ['Cream/buff', 'Variegated (rutile)', 'Opaque white'],
+    detail: `
+      <strong>Titanium dioxide</strong> is primarily an opacifier but also contributes subtle colour:
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li><strong>Pure TiO₂:</strong> Creamy opaque white. Works similarly to tin but less intense. 5–10% makes a glaze fully opaque.</li>
+        <li><strong>Rutile (TiO₂ + ~10% Fe₂O₃ + other impurities):</strong> Creates variagation — streaks, mottled surfaces, breaking effects. The iron and titanium interact to form titanite crystals (CaTiSiO₅) during cooling, creating the textured surface.</li>
+        <li><strong>Crystal glazes:</strong> At very high TiO₂ with the right cooling schedule, large zinc-titanate or calcium-titanate crystals grow to 1–5cm during the hold-and-cool phase.</li>
+      </ul>
+    `,
+  },
+  {
+    name: 'Tin Oxide',
+    oxide: 'SnO₂',
+    swatchBg: 'linear-gradient(135deg,#e8e8e8,#f5f5f5,#ffffff)',
+    emoji: '⬜',
+    colors: ['Opaque white (both)'],
+    detail: `
+      <strong>Tin oxide</strong> is the classic white opacifier — used in majolica and Delftware for centuries:
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li>Insoluble SnO₂ particles remain suspended in the glaze melt, scattering light — producing a bright, reflective white (not translucent like zirconium whites).</li>
+        <li>5–10% gives a soft, warm white. The benchmark for quality.</li>
+        <li>Reacts with chrome oxide → pink (Chrome-tin pink).</li>
+        <li>Historically: the basis of all "tin-glazed earthenware" traditions (majolica, Delft, faience).</li>
+        <li>Expensive; zirconium oxide (ZrO₂) is a cheaper but colder, brighter substitute.</li>
+      </ul>
+    `,
+  },
+  {
+    name: 'Nickel Oxide',
+    oxide: 'NiO / Ni₂O₃',
+    swatchBg: 'linear-gradient(135deg,#787848,#909060,#b0b080)',
+    emoji: '🫒',
+    colors: ['Grey/green/brown', 'Blue (alkaline glaze)'],
+    detail: `
+      <strong>Nickel oxide</strong> is a subtle modifier — rarely used as the primary colorant:
+      <ul style="padding-left:1.2rem;margin:.5rem 0;font-size:.9rem;">
+        <li>Produces muted greys, grey-greens, and khaki browns depending on base glaze chemistry.</li>
+        <li>In high-barium or high-magnesium glazes: shifts to blue or purple.</li>
+        <li>Typically used at 0.5–2% to "dirty" or mute other colors — e.g. softening a bright copper green or muting cobalt blue.</li>
+        <li>Creates matte effects at higher concentrations due to its refractory nature.</li>
+        <li><strong>Health note:</strong> Nickel compounds are carcinogenic — wear PPE when handling raw oxides.</li>
+      </ul>
+    `,
+  },
+];
+
+const colorantGrid = document.getElementById('colorant-grid');
+let activeColorant = null;
+
+COLORANTS.forEach((c, i) => {
+  const card = document.createElement('div');
+  card.className = 'colorant-card';
+  card.innerHTML = `
+    <div class="colorant-swatch" style="background:${c.swatchBg};">${c.emoji}</div>
+    <div class="colorant-info">
+      <div class="colorant-name">${c.name}</div>
+      <div class="colorant-oxide">${c.oxide}</div>
+      <div class="colorant-note">${c.colors.join(' · ')}</div>
+    </div>
+  `;
+
+  const detail = document.createElement('div');
+  detail.className = 'colorant-detail';
+  detail.innerHTML = `
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem;flex-wrap:wrap;">
+      <div style="width:40px;height:40px;border-radius:50%;background:${c.swatchBg};flex-shrink:0;"></div>
+      <div>
+        <h3 style="margin:0;">${c.name}</h3>
+        <code>${c.oxide}</code>
+      </div>
+    </div>
+    ${c.detail}
+  `;
+
+  card.addEventListener('click', () => {
+    if (activeColorant === detail) {
+      detail.classList.remove('visible');
+      activeColorant = null;
+      return;
+    }
+    document.querySelectorAll('.colorant-detail').forEach(d => d.classList.remove('visible'));
+    detail.classList.add('visible');
+    activeColorant = detail;
+    setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  });
+
+  colorantGrid.appendChild(card);
+  colorantGrid.appendChild(detail);
+});
+
+
+// ── ATMOSPHERE TOGGLE ─────────────────────────────────
+const ATM = {
+  ox: {
+    left: {
+      title: 'Electric Kiln — Oxidation',
+      body: 'Ample oxygen throughout firing. Metal ions stay in their highest oxidation state. The most common home setup. Colors are clean, predictable, and consistent.',
+      swatches: [
+        { color: '#c05020', label: 'Fe: Red' },
+        { color: '#208050', label: 'Cu: Green' },
+        { color: '#2050d0', label: 'Co: Blue' },
+        { color: '#503080', label: 'Mn: Purple' },
+      ],
+      eq: '4Fe₃O₄ + O₂ → 6Fe₂O₃  (iron stays as Fe³⁺)',
+    },
+    right: {
+      title: 'What you get',
+      body: 'Warm, earthy tones dominate. Iron gives reds, ambers, tans. Copper gives greens. Cobalt gives clean blue. Glaze surfaces are typically clear and predictable. Stoneware bodies fire warm grey or buff.',
+      swatches: [
+        { color: '#d4783a', label: 'Clay body' },
+        { color: '#a8d0a0', label: 'Copper green' },
+        { color: '#8098c8', label: 'Cobalt blue' },
+        { color: '#c8a068', label: 'Iron amber' },
+      ],
+      eq: 'CuO (Cu²⁺) → green in glaze',
+    },
+  },
+  red: {
+    left: {
+      title: 'Gas/Wood/Soda — Reduction',
+      body: 'Oxygen-starved atmosphere. CO builds up and strips oxygen from metal oxides, reducing them to lower valence states. Results are dramatic but less predictable.',
+      swatches: [
+        { color: '#5a8878', label: 'Fe: Celadon' },
+        { color: '#7a1010', label: 'Cu: Red!' },
+        { color: '#2050d0', label: 'Co: Still blue' },
+        { color: '#808050', label: 'Clay: Grey' },
+      ],
+      eq: 'Fe₂O₃ + CO → 2FeO + CO₂  (Fe³⁺ → Fe²⁺)',
+    },
+    right: {
+      title: 'What you get',
+      body: 'Cool, muted, complex surfaces. Iron gives celadons, blue-greens, grey-blues. Copper gives dramatic ox-blood reds. Clay bodies fire cool grey. Flame markings and flashing from carbon vapour leave unique marks.',
+      swatches: [
+        { color: '#788878', label: 'Clay grey' },
+        { color: '#7aaa98', label: 'Celadon' },
+        { color: '#901818', label: 'Copper red' },
+        { color: '#202020', label: 'Carbon flash' },
+      ],
+      eq: '2CuO + CO → Cu₂O + CO₂  (Cu²⁺ → Cu⁺ = red)',
+    },
+  },
+};
+
+function setAtm(mode) {
+  const d = ATM[mode];
+  document.getElementById('atm-left-title').textContent = d.left.title;
+  document.getElementById('atm-left-body').textContent = d.left.body;
+  document.getElementById('atm-left-eq').textContent = d.left.eq;
+  document.getElementById('atm-left-swatches').innerHTML =
+    d.left.swatches.map(s => `<div class="atm-swatch" style="background:${s.color};">${s.label}</div>`).join('');
+
+  document.getElementById('atm-right-title').textContent = d.right.title;
+  document.getElementById('atm-right-body').textContent = d.right.body;
+  document.getElementById('atm-right-eq').textContent = d.right.eq;
+  document.getElementById('atm-right-swatches').innerHTML =
+    d.right.swatches.map(s => `<div class="atm-swatch" style="background:${s.color};">${s.label}</div>`).join('');
+
+  document.getElementById('atm-panel-left').classList.toggle('highlight', mode === 'red');
+  document.getElementById('atm-panel-right').classList.toggle('highlight', mode === 'red');
+  document.getElementById('atm-ox').classList.toggle('active', mode === 'ox');
+  document.getElementById('atm-red').classList.toggle('active', mode === 'red');
+}
+
+document.getElementById('atm-ox').addEventListener('click', () => setAtm('ox'));
+document.getElementById('atm-red').addEventListener('click', () => setAtm('red'));
+setAtm('ox');
+
+</script>
+</body>
+</html>
